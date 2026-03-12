@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-dm-serif: 'DM Serif Display', Georgia, serif;
+  --font-dm-sans: 'DM Sans', Arial, sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-dm-sans);
+  background: #fdf6f0;
+  color: #4a2e28;
+  overflow-x: hidden;
+}
+
+@layer utilities {
+  .font-serif-display { font-family: var(--font-dm-serif); }
+}
