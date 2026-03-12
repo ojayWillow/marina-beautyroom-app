@@ -19,26 +19,23 @@ export default function SlotPicker({ bookings, blocked, selected, onSelect }: Pr
   const [activeDate, setActiveDate] = useState<string>(dateStr(new Date()));
 
   const days = getWeekDates(weekOffset);
-
-  function selectDay(d: Date) {
-    setActiveDate(dateStr(d));
-  }
-
   const activeDay = days.find(d => dateStr(d) === activeDate) ?? days[0];
 
   return (
     <div>
       {/* Week strip */}
-      <div className="flex items-center gap-2 mb-5 overflow-x-auto pb-1">
+      <div className="flex items-center gap-1.5 mb-5">
         <button
-          onClick={() => { if (weekOffset > 0) { setWeekOffset(w => w - 1); } }}
+          onClick={() => { if (weekOffset > 0) setWeekOffset(w => w - 1); }}
           disabled={weekOffset === 0}
-          className="flex-shrink-0 w-8 h-8 rounded-full border border-blush-mid flex items-center justify-center text-taupe hover:border-rose hover:text-rose disabled:opacity-30 transition-colors"
+          className="flex-shrink-0 w-9 h-9 rounded-full border border-blush-mid flex items-center justify-center text-taupe hover:border-rose hover:text-rose disabled:opacity-30 transition-colors"
+          aria-label="Iepriekšējā nedēļa"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
 
-        <div className="flex gap-2 flex-1 justify-center">
+        {/* Scrollable day strip */}
+        <div className="flex gap-1.5 flex-1 overflow-x-auto pb-1 scrollbar-hide snap-x">
           {days.map(d => {
             const key = dateStr(d);
             const free = getFreeCount(key, bookings, blocked);
@@ -46,21 +43,25 @@ export default function SlotPicker({ bookings, blocked, selected, onSelect }: Pr
             return (
               <button
                 key={key}
-                onClick={() => selectDay(d)}
-                className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl min-w-[48px] border transition-all ${
+                onClick={() => setActiveDate(key)}
+                className={`flex flex-col items-center gap-1 px-2.5 sm:px-3 py-2 rounded-xl flex-shrink-0 w-[46px] sm:w-[52px] border transition-all snap-start ${
                   isActive
-                    ? 'bg-rose border-rose text-white'
+                    ? 'bg-rose border-rose'
                     : 'border-transparent hover:bg-blush hover:border-rose-lt'
                 }`}
               >
-                <span className={`text-[10px] font-semibold tracking-wider uppercase ${
+                <span className={`text-[9px] sm:text-[10px] font-semibold tracking-wider uppercase ${
                   isActive ? 'text-white' : 'text-taupe'
                 }`}>{LV_DAYS[d.getDay()]}</span>
-                <span className={`font-serif text-xl leading-none ${
+                <span className={`font-serif text-lg sm:text-xl leading-none ${
                   isActive ? 'text-white' : 'text-brown'
                 }`}>{d.getDate()}</span>
-                <span className={`w-1.5 h-1.5 rounded-full ${
-                  free === 0 ? 'bg-slot-red opacity-60' : isActive ? 'bg-white/60' : 'bg-slot-green opacity-80'
+                <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
+                  free === 0
+                    ? 'bg-slot-red opacity-60'
+                    : isActive
+                    ? 'bg-white/70'
+                    : 'bg-slot-green opacity-80'
                 }`} />
               </button>
             );
@@ -68,20 +69,22 @@ export default function SlotPicker({ bookings, blocked, selected, onSelect }: Pr
         </div>
 
         <button
-          onClick={() => { if (weekOffset < 4) { setWeekOffset(w => w + 1); } }}
+          onClick={() => { if (weekOffset < 4) setWeekOffset(w => w + 1); }}
           disabled={weekOffset >= 4}
-          className="flex-shrink-0 w-8 h-8 rounded-full border border-blush-mid flex items-center justify-center text-taupe hover:border-rose hover:text-rose disabled:opacity-30 transition-colors"
+          className="flex-shrink-0 w-9 h-9 rounded-full border border-blush-mid flex items-center justify-center text-taupe hover:border-rose hover:text-rose disabled:opacity-30 transition-colors"
+          aria-label="Nākamā nedēļa"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
       </div>
 
-      {/* Date label */}
-      <p className="text-sm text-taupe mb-4">
-        <span className="font-medium text-brown">{fmtDate(activeDay)}</span> &mdash; pieejamie laiki
+      {/* Active date label */}
+      <p className="text-xs text-taupe mb-3">
+        <span className="font-medium text-brown">{fmtDate(activeDay)}</span>
+        {' '}&mdash; pieejamie laiki
       </p>
 
-      {/* Slots */}
+      {/* Time slots — 4 cols on mobile, 6 on sm+ */}
       <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 mb-4">
         {TIME_SLOTS.map(t => {
           const status = getSlotStatus(activeDate, t, bookings, blocked);
@@ -91,11 +94,11 @@ export default function SlotPicker({ bookings, blocked, selected, onSelect }: Pr
               key={t}
               disabled={status !== 'free'}
               onClick={() => onSelect(activeDate, t)}
-              className={`py-2.5 rounded-xl text-sm font-medium border transition-all ${
+              className={`py-2.5 rounded-xl text-xs sm:text-sm font-medium border transition-all leading-none ${
                 isSel
                   ? 'bg-rose border-rose-dk text-white shadow-md -translate-y-0.5'
                   : status === 'free'
-                  ? 'bg-slot-green-lt border-green-200 text-green-800 hover:bg-green-100 hover:-translate-y-0.5'
+                  ? 'bg-slot-green-lt border-green-200 text-green-800 hover:bg-green-100 hover:-translate-y-0.5 active:scale-95'
                   : status === 'blocked'
                   ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed'
                   : 'bg-slot-red-lt border-red-100 text-red-400 cursor-not-allowed opacity-70'
@@ -108,7 +111,7 @@ export default function SlotPicker({ bookings, blocked, selected, onSelect }: Pr
       </div>
 
       {/* Legend */}
-      <div className="flex items-center gap-5 text-xs text-taupe flex-wrap">
+      <div className="flex flex-wrap items-center gap-3 sm:gap-5 text-[11px] text-taupe">
         {[
           { cls: 'bg-slot-green-lt border border-green-200', label: 'Brīvs' },
           { cls: 'bg-slot-red-lt border border-red-100', label: 'Aizņemts' },
@@ -116,7 +119,7 @@ export default function SlotPicker({ bookings, blocked, selected, onSelect }: Pr
           { cls: 'bg-rose border border-rose-dk', label: 'Jūsu izvēle' },
         ].map(({ cls, label }) => (
           <span key={label} className="flex items-center gap-1.5">
-            <span className={`inline-block w-3 h-3 rounded ${cls}`} />
+            <span className={`inline-block w-3 h-3 rounded flex-shrink-0 ${cls}`} />
             {label}
           </span>
         ))}

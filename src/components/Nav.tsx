@@ -12,31 +12,62 @@ export default function Nav() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  // Lock body scroll when drawer open
+  useEffect(() => {
+    document.body.style.overflow = open ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [open]);
+
   const close = () => setOpen(false);
 
   return (
     <>
-      {open && <div className="fixed inset-0 bg-brown/40 z-40" onClick={close} />}
+      {/* Overlay */}
+      {open && (
+        <div
+          className="fixed inset-0 bg-brown/50 z-40 backdrop-blur-sm"
+          onClick={close}
+        />
+      )}
+
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled ? 'bg-white shadow-sm py-3' : 'py-5'
+        scrolled ? 'bg-white/95 backdrop-blur shadow-sm py-3' : 'py-4'
       }`}>
-        <div className="max-w-5xl mx-auto px-6 flex items-center justify-between">
-          <Link href="/" className={`font-serif text-xl transition-colors ${
-            scrolled ? 'text-brown' : 'text-white'
-          }`}>
+        <div className="max-w-5xl mx-auto px-5 flex items-center justify-between">
+
+          {/* Logo */}
+          <Link
+            href="/"
+            className={`font-serif text-lg sm:text-xl transition-colors leading-tight ${
+              scrolled ? 'text-brown' : 'text-white'
+            }`}
+          >
             Marina <em>BeautyRoom</em>
           </Link>
+
+          {/* Hamburger — three proper lines */}
           <button
-            className="md:hidden flex flex-col gap-1.5 p-1"
+            className="md:hidden flex flex-col justify-center items-center w-10 h-10 gap-[5px] rounded-xl"
             onClick={() => setOpen(o => !o)}
             aria-label="Izvēlne"
+            aria-expanded={open}
           >
-            {[0,1,2].map(i => (
-              <span key={i} className={`block w-6 h-px transition-all ${
-                scrolled ? 'bg-brown' : 'bg-white'
-              }`} />
-            ))}
+            <span className={`block w-[22px] h-[2px] rounded-full transition-all duration-300 origin-center ${
+              open
+                ? 'translate-y-[7px] rotate-45 bg-brown'
+                : scrolled ? 'bg-brown' : 'bg-white'
+            }`} />
+            <span className={`block w-[22px] h-[2px] rounded-full transition-all duration-300 ${
+              open ? 'opacity-0 bg-brown' : scrolled ? 'bg-brown' : 'bg-white'
+            }`} />
+            <span className={`block w-[22px] h-[2px] rounded-full transition-all duration-300 origin-center ${
+              open
+                ? '-translate-y-[7px] -rotate-45 bg-brown'
+                : scrolled ? 'bg-brown' : 'bg-white'
+            }`} />
           </button>
+
+          {/* Desktop links */}
           <ul className="hidden md:flex items-center gap-7">
             {[['#services','Pakalpojumi'],['#testimonials','Atsauksmes'],['#booking','Rezervēt']].map(([h,l]) => (
               <li key={h}>
@@ -46,7 +77,8 @@ export default function Nav() {
               </li>
             ))}
             <li>
-              <a href="tel:+37129818158" className="bg-rose hover:bg-rose-dk text-white text-xs font-medium px-5 py-2.5 rounded-full transition-colors">
+              <a href="tel:+37129818158"
+                className="bg-rose hover:bg-rose-dk text-white text-xs font-medium px-5 py-2.5 rounded-full transition-colors whitespace-nowrap">
                 +371 29 818 158
               </a>
             </li>
@@ -55,23 +87,52 @@ export default function Nav() {
       </nav>
 
       {/* Mobile drawer */}
-      <div className={`fixed top-0 right-0 h-full w-72 bg-white z-50 shadow-xl transition-transform duration-300 ${
+      <div className={`fixed top-0 right-0 h-full w-[min(80vw,300px)] bg-white z-50 shadow-2xl transition-transform duration-300 ease-in-out flex flex-col ${
         open ? 'translate-x-0' : 'translate-x-full'
       }`}>
-        <div className="flex items-center justify-between px-5 py-5 border-b border-blush-mid">
-          <span className="font-serif text-brown">Marina <em className="text-rose">BeautyRoom</em></span>
-          <button onClick={close} className="text-2xl text-brown leading-none">&times;</button>
+        {/* Drawer header */}
+        <div className="flex items-center justify-between px-5 py-5 border-b border-blush-mid flex-shrink-0">
+          <span className="font-serif text-brown text-base">Marina <em className="text-rose">BeautyRoom</em></span>
+          <button
+            onClick={close}
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-blush transition-colors text-brown text-xl leading-none"
+            aria-label="Aizvērt"
+          >
+            &times;
+          </button>
         </div>
-        <ul className="flex flex-col">
+
+        {/* Drawer links */}
+        <ul className="flex flex-col flex-1">
           {[['#services','Pakalpojumi'],['#testimonials','Atsauksmes'],['#booking','Rezervēt']].map(([h,l]) => (
             <li key={h} className="border-b border-blush-mid">
-              <a href={h} onClick={close} className="block px-5 py-4 text-brown hover:text-rose transition-colors">{l}</a>
+              <a
+                href={h}
+                onClick={close}
+                className="flex items-center px-5 py-4 text-brown text-base hover:text-rose hover:bg-blush transition-colors"
+              >
+                {l}
+              </a>
             </li>
           ))}
-          <li>
-            <a href="tel:+37129818158" onClick={close} className="block px-5 py-4 text-rose font-medium">+371 29 818 158</a>
+          <li className="mt-4 px-5">
+            <a
+              href="tel:+37129818158"
+              onClick={close}
+              className="flex items-center justify-center gap-2 w-full py-3.5 bg-rose hover:bg-rose-dk text-white font-medium rounded-full transition-colors text-sm"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
+                <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.36 1.18 2 2 0 012.34 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.16 6.16l1.28-.78a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+              </svg>
+              +371 29 818 158
+            </a>
           </li>
         </ul>
+
+        {/* Drawer footer */}
+        <div className="px-5 pb-8 pt-4 border-t border-blush-mid flex-shrink-0">
+          <p className="text-xs text-taupe text-center">Ruses iela 6-1 &bull; Atvērts 24/7</p>
+        </div>
       </div>
     </>
   );

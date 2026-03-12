@@ -7,13 +7,36 @@
   --font-dm-sans: 'DM Sans', Arial, sans-serif;
 }
 
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+  /* Prevent horizontal overflow on mobile */
+  overflow-x: hidden;
+}
 
 body {
   font-family: var(--font-dm-sans);
   background: #fdf6f0;
   color: #4a2e28;
   overflow-x: hidden;
+  /* Better font rendering on iOS */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* iOS safe area padding for FAB */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .fab-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Hide scrollbar on slot day strip */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
 
 @layer utilities {
